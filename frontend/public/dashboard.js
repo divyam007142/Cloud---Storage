@@ -1,4 +1,4 @@
-const API_URL = 'https://securecloud-hub-1.preview.emergentagent.com/api';
+const API_URL = 'http://localhost:8001/api';
 
 const token = localStorage.getItem('authToken');
 const user = JSON.parse(localStorage.getItem('user') || '{}');
