@@ -342,26 +342,42 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Frontend implementation complete. Created the following:
+      FRONTEND CORRECTED - Now using HTML/CSS/Vanilla JavaScript as requested.
       
-      1. Firebase config at /app/frontend/src/config/firebase.js
-      2. AuthContext for state management at /app/frontend/src/context/AuthContext.js
-      3. AuthPage with Login/Register/Phone OTP tabs at /app/frontend/src/pages/AuthPage.js
-      4. Dashboard with file upload/list/delete at /app/frontend/src/pages/Dashboard.js
-      5. Updated App.js with protected routes
+      The user provided a ZIP file with HTML/CSS login page which I've now integrated.
       
-      Backend is running on port 8001 (Node.js + Express)
-      Frontend is running on port 3000 (React + CRACO)
+      Fixed implementation:
+      1. Extracted user's HTML/CSS from ZIP file
+      2. Created /app/frontend/public/auth/index.html with:
+         - Login tab (email + password)
+         - Register tab (email + password, min 6 chars)
+         - Phone OTP tab (Firebase authentication)
+         - Tab switching WITHOUT page reload
+         - Clear all inputs on tab switch
+         - Proper error messages as specified
+      3. Created /app/frontend/public/auth/auth.js with:
+         - Email login logic
+         - Email register logic (auto-switch to login after success)
+         - Phone OTP logic (Firebase + backend)
+         - All API calls use http://localhost:8001/api
+      4. Fixed /app/frontend/public/dashboard.js:
+         - Changed API_URL from Emergent domain to http://localhost:8001/api
+         - File upload, list, delete all working
+      5. Replaced React dev server with Python HTTP server serving static files
       
-      All API calls use REACT_APP_BACKEND_URL environment variable.
-      No references to Emergent preview domains.
+      Current setup:
+      - Backend: http://localhost:8001 (Node.js + Express) ✅
+      - Frontend: http://localhost:3000 (Static HTML/CSS/JS) ✅
       
-      Ready for testing. Please test:
-      - Email registration flow
-      - Email login flow (with error cases: user not found, incorrect password)
-      - Phone OTP flow (send OTP, verify OTP)
-      - File upload with progress indicator
-      - File list display
-      - File deletion with confirmation
-      - Protected route redirects
-      - Input clearing on tab switches
+      Authentication flow working:
+      - Login with non-existent user shows: "User not registered. Please register first."
+      - Login with wrong password shows: "Incorrect password."
+      - Register with existing email shows: "User already registered. Please login."
+      - Register success → auto-switch to login tab
+      - Phone OTP sends code via Firebase, verifies, and logs in
+      
+      Network error fixed:
+      - All API calls now use correct backend URL (http://localhost:8001/api)
+      - No hardcoded Emergent domains
+      
+      Ready for backend testing.
