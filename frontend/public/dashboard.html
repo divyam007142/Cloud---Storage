@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - File Storage</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <div class="header-content">
+        <h1>Secure File Storage</h1>
+        <div class="user-info">
+          <span id="userEmail"></span>
+          <button class="logout-btn" id="logoutBtn" data-testid="logout-button">
+            <i class='bx bx-log-out'></i> Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+      <div class="upload-section">
+        <h2>Upload Files</h2>
+        <div class="upload-area" id="uploadArea" data-testid="upload-area">
+          <i class='bx bx-cloud-upload'></i>
+          <p>Click to select or drag and drop your files here</p>
+          <p class="upload-info">Max file size: 50MB | Executable files blocked</p>
+          <input type="file" id="fileInput" data-testid="file-input" style="display: none;">
+        </div>
+        <div class="message" id="uploadMessage" style="display: none;"></div>
+      </div>
+
+      <div class="files-section">
+        <div class="section-header">
+          <h2>Your Files</h2>
+          <button class="refresh-btn" id="refreshBtn" data-testid="refresh-button">
+            <i class='bx bx-refresh'></i> Refresh
+          </button>
+        </div>
+        <div class="files-grid" id="filesGrid" data-testid="files-grid">
+          <div class="loading" id="loadingIndicator">Loading files...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
