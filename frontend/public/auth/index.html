@@ -3,15 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Secure Auth - Login & Register</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Secure Auth | Login & Register</title>
+  <link rel="stylesheet" href="../style.css">
   <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <style>
+    .error-message {
+      background: rgba(255, 59, 48, 0.15);
+      border: 1px solid rgba(255, 59, 48, 0.3);
+      color: #ff3b30;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      font-size: 14px;
+      display: none;
+    }
+    .success-message {
+      background: rgba(52, 199, 89, 0.15);
+      border: 1px solid rgba(52, 199, 89, 0.3);
+      color: #34c759;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      font-size: 14px;
+      display: none;
+    }
+    .auth-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .auth-tabs button {
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    .auth-tabs button.active {
+      color: #fff;
+      border-bottom-color: #fff;
+    }
+    .auth-view {
+      display: none;
+    }
+    .auth-view.active {
+      display: block;
+    }
+    .info-text {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: -20px;
+      margin-bottom: 15px;
+    }
+    #recaptcha-container {
+      display: flex;
+      justify-content: center;
+      margin: 15px 0;
+    }
+  </style>
 </head>
 <body>
-  <div class="wrapper" id="loginForm">
-    <form id="loginFormElement">
+  <div class="wrapper">
+    <div class="auth-tabs">
+      <button class="tab-btn active" data-view="login">Login</button>
+      <button class="tab-btn" data-view="register">Register</button>
+      <button class="tab-btn" data-view="phone">Phone OTP</button>
+    </div>
+
+    <!-- Login View -->
+    <form id="loginForm" class="auth-view active">
       <h1>Login</h1>
-      <div class="error-message" id="loginError" style="display: none;"></div>
+      <div id="loginError" class="error-message"></div>
       <div class="input-box">
         <input type="email" id="loginEmail" placeholder="Email" required>
         <i class='bx bxs-user'></i>
@@ -20,60 +86,63 @@
         <input type="password" id="loginPassword" placeholder="Password" required>
         <i class='bx bxs-lock-alt'></i>
       </div>
-      <div class="remember-forgot">
-        <label><input type="checkbox" id="rememberMe">Remember Me</label>
-        <a href="#" id="phoneAuthLink">Login with Phone</a>
-      </div>
       <button type="submit" class="btn">Login</button>
       <div class="register-link">
-        <p>Don't have an account? <a href="#" id="showRegister">Register</a></p>
+        <p>Don't have an account? <a href="#" class="tab-link" data-view="register">Register</a></p>
       </div>
     </form>
-  </div>
 
-  <div class="wrapper" id="registerForm" style="display: none;">
-    <form id="registerFormElement">
+    <!-- Register View -->
+    <form id="registerForm" class="auth-view">
       <h1>Register</h1>
-      <div class="error-message" id="registerError" style="display: none;"></div>
-      <div class="success-message" id="registerSuccess" style="display: none;"></div>
+      <div id="registerError" class="error-message"></div>
+      <div id="registerSuccess" class="success-message"></div>
       <div class="input-box">
         <input type="email" id="registerEmail" placeholder="Email" required>
         <i class='bx bxs-user'></i>
       </div>
       <div class="input-box">
-        <input type="password" id="registerPassword" placeholder="Password (min 6 chars)" required minlength="6">
+        <input type="password" id="registerPassword" placeholder="Password (min 6 characters)" required minlength="6">
         <i class='bx bxs-lock-alt'></i>
       </div>
       <button type="submit" class="btn">Register</button>
       <div class="register-link">
-        <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+        <p>Already have an account? <a href="#" class="tab-link" data-view="login">Login</a></p>
       </div>
     </form>
-  </div>
 
-  <div class="wrapper" id="phoneAuthForm" style="display: none;">
-    <form id="phoneAuthFormElement">
+    <!-- Phone OTP View -->
+    <div id="phoneAuthView" class="auth-view">
       <h1>Phone Login</h1>
-      <div class="error-message" id="phoneError" style="display: none;"></div>
-      <div class="input-box">
-        <input type="tel" id="phoneNumber" placeholder="+1234567890" required>
-        <i class='bx bxs-phone'></i>
+      <div id="phoneError" class="error-message"></div>
+      
+      <div id="phoneNumberStep">
+        <div class="input-box">
+          <input type="tel" id="phoneNumber" placeholder="+1234567890" required>
+          <i class='bx bxs-phone'></i>
+        </div>
+        <p class="info-text">Include country code (e.g., +1 for US)</p>
+        <div id="recaptcha-container"></div>
+        <button type="button" class="btn" id="sendOtpBtn">Send OTP</button>
       </div>
-      <div id="recaptcha-container"></div>
-      <button type="submit" class="btn" id="sendOtpBtn">Send OTP</button>
-      <div class="input-box" id="otpInputBox" style="display: none;">
-        <input type="text" id="otpCode" placeholder="Enter OTP" required>
-        <i class='bx bxs-lock'></i>
+
+      <div id="otpVerifyStep" style="display: none;">
+        <div class="input-box">
+          <input type="text" id="otpCode" placeholder="Enter 6-digit OTP" maxlength="6" required>
+          <i class='bx bxs-message-square-check'></i>
+        </div>
+        <button type="button" class="btn" id="verifyOtpBtn">Verify OTP</button>
+        <button type="button" class="btn" id="changeNumberBtn" style="background: transparent; border: 1px solid #fff; color: #fff; margin-top: 10px;">Change Number</button>
       </div>
-      <button type="button" class="btn" id="verifyOtpBtn" style="display: none;">Verify OTP</button>
+
       <div class="register-link">
-        <p><a href="#" id="backToLogin">Back to Email Login</a></p>
+        <p>Use email instead? <a href="#" class="tab-link" data-view="login">Login</a></p>
       </div>
-    </form>
+    </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="auth.js"></script>
 </body>
 </html>

@@ -1,5 +1,7 @@
-const API_URL = 'https://securecloud-hub-1.preview.emergentagent.com/api';
+// Backend API URL
+const API_URL = 'http://localhost:8001/api';
 
+// Firebase Configuration
 const firebaseConfig = {
   apiKey: 'AIzaSyAUfUtuejZs4r_MeyyIPxJtRijy4j6aO58',
   authDomain: 'web-apps-b38b9.firebaseapp.com',
@@ -10,131 +12,95 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-let confirmationResult = null;
+// Check if already logged in
+if (localStorage.getItem('authToken')) {
+  window.location.href = '/dashboard.html';
+}
 
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
-const phoneAuthForm = document.getElementById('phoneAuthForm');
+// Tab switching
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabLinks = document.querySelectorAll('.tab-link');
+const authViews = document.querySelectorAll('.auth-view');
 
-const showRegisterLink = document.getElementById('showRegister');
-const showLoginLink = document.getElementById('showLogin');
-const phoneAuthLink = document.getElementById('phoneAuthLink');
-const backToLoginLink = document.getElementById('backToLogin');
+function switchTab(viewName) {
+  // Hide all views
+  authViews.forEach(view => view.classList.remove('active'));
+  tabButtons.forEach(btn => btn.classList.remove('active'));
+  
+  // Show selected view
+  const activeView = document.getElementById(`${viewName}Form`) || document.getElementById(`${viewName}AuthView`);
+  if (activeView) {
+    activeView.classList.add('active');
+  }
+  
+  // Activate button
+  const activeBtn = document.querySelector(`.tab-btn[data-view="${viewName}"]`);
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+  }
+  
+  // Clear all inputs and messages
+  clearAllForms();
+}
 
-function clearAllInputs() {
+function clearAllForms() {
+  // Clear login form
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  
+  // Clear register form
   document.getElementById('registerEmail').value = '';
   document.getElementById('registerPassword').value = '';
-  document.getElementById('phoneNumber').value = '';
-  document.getElementById('otpCode').value = '';
-  
-  document.getElementById('loginError').style.display = 'none';
   document.getElementById('registerError').style.display = 'none';
   document.getElementById('registerSuccess').style.display = 'none';
+  
+  // Clear phone form
+  document.getElementById('phoneNumber').value = '';
+  document.getElementById('otpCode').value = '';
   document.getElementById('phoneError').style.display = 'none';
+  document.getElementById('phoneNumberStep').style.display = 'block';
+  document.getElementById('otpVerifyStep').style.display = 'none';
 }
 
-function showLogin() {
-  clearAllInputs();
-  loginForm.style.display = 'block';
-  registerForm.style.display = 'none';
-  phoneAuthForm.style.display = 'none';
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    switchTab(btn.dataset.view);
+  });
+});
+
+tabLinks.forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchTab(link.dataset.view);
+  });
+});
+
+// Helper functions
+function showError(elementId, message) {
+  const errorEl = document.getElementById(elementId);
+  errorEl.textContent = message;
+  errorEl.style.display = 'block';
 }
 
-function showRegister() {
-  clearAllInputs();
-  loginForm.style.display = 'none';
-  registerForm.style.display = 'block';
-  phoneAuthForm.style.display = 'none';
+function hideError(elementId) {
+  const errorEl = document.getElementById(elementId);
+  errorEl.style.display = 'none';
 }
 
-function showPhoneAuth() {
-  clearAllInputs();
-  loginForm.style.display = 'none';
-  registerForm.style.display = 'none';
-  phoneAuthForm.style.display = 'block';
-  
-  if (!window.recaptchaVerifier) {
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-      'size': 'normal',
-      'callback': (response) => {
-        console.log('reCAPTCHA solved');
-      }
-    });
-    window.recaptchaVerifier.render();
-  }
+function showSuccess(elementId, message) {
+  const successEl = document.getElementById(elementId);
+  successEl.textContent = message;
+  successEl.style.display = 'block';
 }
 
-showRegisterLink.addEventListener('click', (e) => {
+// LOGIN
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  showRegister();
-});
-
-showLoginLink.addEventListener('click', (e) => {
-  e.preventDefault();
-  showLogin();
-});
-
-phoneAuthLink.addEventListener('click', (e) => {
-  e.preventDefault();
-  showPhoneAuth();
-});
-
-backToLoginLink.addEventListener('click', (e) => {
-  e.preventDefault();
-  showLogin();
-});
-
-document.getElementById('registerFormElement').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const email = document.getElementById('registerEmail').value;
-  const password = document.getElementById('registerPassword').value;
-  const errorDiv = document.getElementById('registerError');
-  const successDiv = document.getElementById('registerSuccess');
-  
-  errorDiv.style.display = 'none';
-  successDiv.style.display = 'none';
-  
-  try {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
-    
-    const data = await response.json();
-    
-    if (!response.ok) {
-      errorDiv.textContent = data.error || 'Registration failed';
-      errorDiv.style.display = 'block';
-      return;
-    }
-    
-    successDiv.textContent = 'Registration successful! Redirecting to login...';
-    successDiv.style.display = 'block';
-    
-    setTimeout(() => {
-      showLogin();
-    }, 1500);
-  } catch (error) {
-    console.error('Registration error:', error);
-    errorDiv.textContent = 'Network error. Please try again.';
-    errorDiv.style.display = 'block';
-  }
-});
-
-document.getElementById('loginFormElement').addEventListener('submit', async (e) => {
-  e.preventDefault();
+  hideError('loginError');
   
   const email = document.getElementById('loginEmail').value;
   const password = document.getElementById('loginPassword').value;
-  const errorDiv = document.getElementById('loginError');
-  
-  errorDiv.style.display = 'none';
   
   try {
     const response = await fetch(`${API_URL}/auth/login`, {
@@ -148,67 +114,146 @@ document.getElementById('loginFormElement').addEventListener('submit', async (e)
     const data = await response.json();
     
     if (!response.ok) {
-      errorDiv.textContent = data.error || 'Login failed';
-      errorDiv.style.display = 'block';
+      showError('loginError', data.error || 'Login failed');
       return;
     }
     
+    // Store token and user
     localStorage.setItem('authToken', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     
+    // Redirect to dashboard
     window.location.href = '/dashboard.html';
   } catch (error) {
     console.error('Login error:', error);
-    errorDiv.textContent = 'Network error. Please try again.';
-    errorDiv.style.display = 'block';
+    showError('loginError', 'Network error. Please try again.');
   }
 });
 
-document.getElementById('sendOtpBtn').addEventListener('click', async (e) => {
+// REGISTER
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  hideError('registerError');
+  document.getElementById('registerSuccess').style.display = 'none';
   
-  const phoneNumber = document.getElementById('phoneNumber').value;
-  const errorDiv = document.getElementById('phoneError');
+  const email = document.getElementById('registerEmail').value;
+  const password = document.getElementById('registerPassword').value;
   
-  errorDiv.style.display = 'none';
-  
-  if (!phoneNumber) {
-    errorDiv.textContent = 'Please enter a phone number';
-    errorDiv.style.display = 'block';
+  if (password.length < 6) {
+    showError('registerError', 'Password must be at least 6 characters');
     return;
   }
   
   try {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      showError('registerError', data.error || 'Registration failed');
+      return;
+    }
+    
+    // Show success message
+    showSuccess('registerSuccess', 'Registration successful! Switching to login...');
+    
+    // Clear inputs
+    document.getElementById('registerEmail').value = '';
+    document.getElementById('registerPassword').value = '';
+    
+    // Switch to login after 1.5 seconds
+    setTimeout(() => {
+      switchTab('login');
+    }, 1500);
+  } catch (error) {
+    console.error('Register error:', error);
+    showError('registerError', 'Network error. Please try again.');
+  }
+});
+
+// PHONE OTP
+let confirmationResult = null;
+
+function setupRecaptcha() {
+  if (!window.recaptchaVerifier) {
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      size: 'normal',
+      callback: () => {
+        // reCAPTCHA solved
+      }
+    });
+  }
+}
+
+document.getElementById('sendOtpBtn').addEventListener('click', async () => {
+  hideError('phoneError');
+  
+  const phoneNumber = document.getElementById('phoneNumber').value.trim();
+  
+  if (!phoneNumber.startsWith('+')) {
+    showError('phoneError', 'Phone number must include country code (e.g., +1234567890)');
+    return;
+  }
+  
+  try {
+    const sendBtn = document.getElementById('sendOtpBtn');
+    sendBtn.textContent = 'Sending...';
+    sendBtn.disabled = true;
+    
+    setupRecaptcha();
     const appVerifier = window.recaptchaVerifier;
+    
     confirmationResult = await auth.signInWithPhoneNumber(phoneNumber, appVerifier);
     
-    document.getElementById('otpInputBox').style.display = 'block';
-    document.getElementById('verifyOtpBtn').style.display = 'block';
-    document.getElementById('sendOtpBtn').textContent = 'Resend OTP';
+    // Show OTP input step
+    document.getElementById('phoneNumberStep').style.display = 'none';
+    document.getElementById('otpVerifyStep').style.display = 'block';
+    
+    sendBtn.textContent = 'Send OTP';
+    sendBtn.disabled = false;
   } catch (error) {
-    console.error('OTP send error:', error);
-    errorDiv.textContent = 'Failed to send OTP. Please check the phone number.';
-    errorDiv.style.display = 'block';
+    console.error('Send OTP error:', error);
+    showError('phoneError', 'Failed to send OTP. Please check the phone number format.');
+    
+    const sendBtn = document.getElementById('sendOtpBtn');
+    sendBtn.textContent = 'Send OTP';
+    sendBtn.disabled = false;
+    
+    // Reset reCAPTCHA
+    if (window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = null;
+    }
   }
 });
 
 document.getElementById('verifyOtpBtn').addEventListener('click', async () => {
-  const otpCode = document.getElementById('otpCode').value;
-  const errorDiv = document.getElementById('phoneError');
+  hideError('phoneError');
   
-  errorDiv.style.display = 'none';
+  const otpCode = document.getElementById('otpCode').value.trim();
   
-  if (!otpCode) {
-    errorDiv.textContent = 'Please enter the OTP';
-    errorDiv.style.display = 'block';
+  if (otpCode.length !== 6) {
+    showError('phoneError', 'Please enter a valid 6-digit OTP');
     return;
   }
   
   try {
+    const verifyBtn = document.getElementById('verifyOtpBtn');
+    verifyBtn.textContent = 'Verifying...';
+    verifyBtn.disabled = true;
+    
+    // Verify OTP with Firebase
     const result = await confirmationResult.confirm(otpCode);
     const idToken = await result.user.getIdToken();
-    const phoneNumber = result.user.phoneNumber;
+    const phoneNumber = document.getElementById('phoneNumber').value;
     
+    // Send to backend
     const response = await fetch(`${API_URL}/auth/phone-login`, {
       method: 'POST',
       headers: {
@@ -220,18 +265,38 @@ document.getElementById('verifyOtpBtn').addEventListener('click', async () => {
     const data = await response.json();
     
     if (!response.ok) {
-      errorDiv.textContent = data.error || 'Phone authentication failed';
-      errorDiv.style.display = 'block';
+      showError('phoneError', data.error || 'Phone login failed');
+      verifyBtn.textContent = 'Verify OTP';
+      verifyBtn.disabled = false;
       return;
     }
     
+    // Store token and user
     localStorage.setItem('authToken', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     
+    // Redirect to dashboard
     window.location.href = '/dashboard.html';
   } catch (error) {
-    console.error('OTP verification error:', error);
-    errorDiv.textContent = 'Invalid OTP. Please try again.';
-    errorDiv.style.display = 'block';
+    console.error('Verify OTP error:', error);
+    showError('phoneError', 'Invalid OTP. Please try again.');
+    
+    const verifyBtn = document.getElementById('verifyOtpBtn');
+    verifyBtn.textContent = 'Verify OTP';
+    verifyBtn.disabled = false;
+  }
+});
+
+document.getElementById('changeNumberBtn').addEventListener('click', () => {
+  document.getElementById('phoneNumberStep').style.display = 'block';
+  document.getElementById('otpVerifyStep').style.display = 'none';
+  document.getElementById('phoneNumber').value = '';
+  document.getElementById('otpCode').value = '';
+  hideError('phoneError');
+  
+  // Reset reCAPTCHA
+  if (window.recaptchaVerifier) {
+    window.recaptchaVerifier.clear();
+    window.recaptchaVerifier = null;
   }
 });
