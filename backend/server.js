@@ -23,10 +23,15 @@ if (!MONGODB_URI) {
 }
 
 mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  dbName: 'secureAuthDB'
 })
-.then(() => console.log('MongoDB connected successfully'))
+.then(async () => {
+  console.log('MongoDB connected successfully');
+  const User = require('./models/User');
+  await User.collection.dropIndexes().catch(() => {});
+  await User.init();
+  console.log('User indexes initialized');
+})
 .catch((err) => {
   console.error('MongoDB connection error:', err);
   process.exit(1);
