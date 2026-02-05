@@ -991,6 +991,13 @@ const Dashboard = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={() => handleEditText(text)}
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() => copyToClipboard(text.content)}
                                 >
                                   <Copy className="h-4 w-4" />
@@ -1018,6 +1025,47 @@ const Dashboard = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Edit Text Modal */}
+              {editingText && (
+                <Dialog open={!!editingText} onOpenChange={(open) => !open && setEditingText(null)}>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Edit Text</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleUpdateText} className="space-y-4">
+                      <Input
+                        placeholder="Text title"
+                        value={editTextTitle}
+                        onChange={(e) => setEditTextTitle(e.target.value)}
+                        required
+                      />
+                      <Textarea
+                        placeholder="Text content..."
+                        value={editTextContent}
+                        onChange={(e) => setEditTextContent(e.target.value)}
+                        rows={12}
+                        required
+                      />
+                      <div className="flex gap-2">
+                        <Button type="submit" disabled={savingText}>
+                          {savingText ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Updating...
+                            </>
+                          ) : (
+                            'Update Text'
+                          )}
+                        </Button>
+                        <Button type="button" variant="outline" onClick={() => setEditingText(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           )}
 
