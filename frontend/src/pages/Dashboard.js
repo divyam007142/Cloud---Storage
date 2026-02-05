@@ -13,6 +13,14 @@ import { Upload, LogOut, Trash2, File, Loader2 } from 'lucide-react';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Get greeting based on time of day
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good Morning';
+  if (hour < 18) return 'Good Afternoon';
+  return 'Good Evening';
+};
+
 const Dashboard = () => {
   const { token, user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -24,6 +32,7 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [greeting] = useState(getGreeting());
 
   // Redirect if not authenticated
   useEffect(() => {
