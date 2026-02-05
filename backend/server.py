@@ -401,7 +401,15 @@ async def get_profile(user: dict = Depends(verify_token)):
                 "email": user_doc.get('email'),
                 "phoneNumber": user_doc.get('phoneNumber'),
                 "displayName": user_doc.get('displayName'),
-                "authProvider": user_doc.get('authProvider', 'email')
+                "authProvider": user_doc.get('authProvider', 'email'),
+                "createdAt": user_doc.get('createdAt'),
+                "lastLogin": user_doc.get('lastLogin'),
+                "settings": {
+                    "theme": user_doc.get('theme', 'system'),
+                    "layoutPreference": user_doc.get('layoutPreference', 'grid'),
+                    "sidebarCollapsed": user_doc.get('sidebarCollapsed', False),
+                    "analyticsAutoRefresh": user_doc.get('analyticsAutoRefresh', True)
+                }
             }
         }
     except HTTPException:
@@ -431,6 +439,34 @@ async def update_profile(user_update: UserUpdate, user: dict = Depends(verify_to
     except Exception as e:
         logging.error(f"Update profile error: {e}")
         raise HTTPException(status_code=500, detail="Profile update failed")
+
+@api_router.put("/user/settings")
+async def update_settings(settings_update: UserSettingsUpdate, user: dict = Depends(verify_token)):
+    try:
+        update_data = {}
+        if settings_update.theme is not None:
+            update_data['theme'] = settings_update.theme
+        if settings_update.layoutPreference is not None:
+            update_data['layoutPreference'] = settings_update.layoutPreference
+        if settings_update.sidebarCollapsed is not None:
+            update_data['sidebarCollapsed'] = settings_update.sidebarCollapsed
+        if settings_update.analyticsAutoRefresh is not None:
+            update_data['analyticsAutoRefresh'] = settings_update.analyticsAutoRefresh
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No settings data provided")
+        
+        await db.users.update_one(
+            {"_id": user['userId']},
+            {"$set": update_data}
+        )
+        
+        return {"message": "Settings updated successfully", "success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Update settings error: {e}")
+        raise HTTPException(status_code=500, detail="Settings update failed")
 
 # Notes Routes
 @api_router.post("/notes")
