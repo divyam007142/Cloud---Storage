@@ -93,6 +93,16 @@ class TextCreate(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1)
 
+class TextUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    content: Optional[str] = Field(None, min_length=1)
+
+class UserSettingsUpdate(BaseModel):
+    theme: Optional[str] = None  # 'light', 'dark', 'system'
+    layoutPreference: Optional[str] = None  # 'grid', 'list'
+    sidebarCollapsed: Optional[bool] = None
+    analyticsAutoRefresh: Optional[bool] = None
+
 # Authentication helper
 async def verify_token(authorization: str = Header(None)):
     if not authorization or not authorization.startswith('Bearer '):
