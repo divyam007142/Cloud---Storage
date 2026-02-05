@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Upload, 
   LogOut, 
@@ -20,7 +21,11 @@ import {
   Settings as SettingsIcon,
   Copy,
   Menu,
-  X
+  X,
+  Download,
+  Eye,
+  BarChart3,
+  Edit2
 } from 'lucide-react';
 import Settings from './Settings';
 
