@@ -470,6 +470,7 @@ const Dashboard = () => {
     { id: 'myfiles', icon: File, label: 'My Files' },
     { id: 'notes', icon: StickyNote, label: 'Notes' },
     { id: 'textstorage', icon: FileText, label: 'Text Storage' },
+    { id: 'analytics', icon: BarChart3, label: 'Analytics' },
     { id: 'settings', icon: SettingsIcon, label: 'Settings' },
   ];
 
