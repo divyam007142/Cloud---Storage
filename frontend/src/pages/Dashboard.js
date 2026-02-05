@@ -189,12 +189,17 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
+        {/* Header with Greeting */}
         <div className="flex justify-between items-center bg-white rounded-lg shadow p-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">File Storage Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-800">
+              {greeting}, {user?.email?.split('@')[0] || user?.phoneNumber || 'User'}! 👋
+            </h1>
             <p className="text-sm text-gray-600">
-              {user?.email || user?.phoneNumber || 'User'}
+              Welcome to your File Storage Dashboard
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Logged in as: {user?.email || user?.phoneNumber}
             </p>
           </div>
           <Button onClick={handleLogout} variant="outline">
