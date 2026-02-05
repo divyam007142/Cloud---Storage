@@ -380,6 +380,69 @@ const Dashboard = () => {
     setTimeout(() => setSuccess(''), 2000);
   };
 
+  // Handle file preview
+  const handlePreviewFile = (file) => {
+    setPreviewFile(file);
+    setPreviewModalOpen(true);
+  };
+
+  // Handle file download
+  const handleDownloadFile = async (fileId, fileName) => {
+    try {
+      const response = await axios.get(`${API}/files/download/${fileId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download error:', error);
+      setError('Failed to download file');
+    }
+  };
+
+  // Handle edit text
+  const handleEditText = (text) => {
+    setEditingText(text);
+    setEditTextTitle(text.title);
+    setEditTextContent(text.content);
+  };
+
+  // Handle update text
+  const handleUpdateText = async (e) => {
+    e.preventDefault();
+    setSavingText(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      await axios.put(
+        `${API}/texts/${editingText._id}`,
+        { title: editTextTitle, content: editTextContent },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setSuccess('Text updated successfully!');
+      setEditingText(null);
+      setEditTextTitle('');
+      setEditTextContent('');
+      await fetchTexts();
+    } catch (error) {
+      console.error('Update text error:', error);
+      setError(error.response?.data?.detail || 'Failed to update text');
+    } finally {
+      setSavingText(false);
+    }
+  };
+
   // Format file size
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
