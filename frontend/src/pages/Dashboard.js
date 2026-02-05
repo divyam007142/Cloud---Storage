@@ -594,6 +594,41 @@ const Dashboard = () => {
                 <p className="text-gray-600 mt-1">Quick overview of your cloud storage</p>
               </div>
 
+              {/* Storage Stats */}
+              {storageStats && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Storage Usage</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span>
+                          {(storageStats.storageUsed / (1024 * 1024 * 1024)).toFixed(2)} GB used of{' '}
+                          {(storageStats.storageLimit / (1024 * 1024 * 1024)).toFixed(0)} GB
+                        </span>
+                        <span className="font-medium">{storageStats.percentageUsed.toFixed(1)}%</span>
+                      </div>
+                      <Progress value={storageStats.percentageUsed} className="h-2" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-blue-600">{storageStats.fileCount}</p>
+                        <p className="text-sm text-gray-600">Files</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-green-600">{storageStats.notesCount}</p>
+                        <p className="text-sm text-gray-600">Notes</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-purple-600">{storageStats.textsCount}</p>
+                        <p className="text-sm text-gray-600">Texts</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
