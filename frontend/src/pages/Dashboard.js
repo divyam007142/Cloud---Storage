@@ -122,8 +122,45 @@ const Dashboard = () => {
       if (activeSection === 'textstorage' || activeSection === 'dashboard') {
         fetchTexts();
       }
+      if (activeSection === 'dashboard') {
+        fetchStorageStats();
+        fetchAnalytics();
+      }
+      if (activeSection === 'analytics') {
+        fetchAnalytics();
+      }
     }
   }, [activeSection, isAuthenticated]);
+
+  // Fetch storage stats
+  const fetchStorageStats = async () => {
+    setStatsLoading(true);
+    try {
+      const response = await axios.get(`${API}/storage/stats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStorageStats(response.data);
+    } catch (error) {
+      console.error('Fetch storage stats error:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  // Fetch analytics
+  const fetchAnalytics = async () => {
+    setAnalyticsLoading(true);
+    try {
+      const response = await axios.get(`${API}/analytics`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAnalytics(response.data);
+    } catch (error) {
+      console.error('Fetch analytics error:', error);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
 
   // Fetch files
   const fetchFiles = async () => {
