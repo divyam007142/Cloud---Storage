@@ -780,7 +780,17 @@ const Dashboard = () => {
                       {files.map((file) => (
                         <div key={file._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                           <div className="flex items-center gap-4 flex-1 min-w-0">
-                            <File className="h-8 w-8 text-blue-500 flex-shrink-0" />
+                            {file.fileType.startsWith('image/') ? (
+                              <img 
+                                src={`${BACKEND_URL}${file.fileUrl}`} 
+                                alt={file.originalName}
+                                className="h-12 w-12 object-cover rounded flex-shrink-0"
+                              />
+                            ) : file.fileType === 'application/pdf' ? (
+                              <FileText className="h-8 w-8 text-red-500 flex-shrink-0" />
+                            ) : (
+                              <File className="h-8 w-8 text-blue-500 flex-shrink-0" />
+                            )}
                             <div className="min-w-0 flex-1">
                               <p className="font-medium text-sm truncate">{file.originalName}</p>
                               <div className="flex gap-4 mt-1">
@@ -789,13 +799,31 @@ const Dashboard = () => {
                               </div>
                             </div>
                           </div>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteFile(file._id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex gap-2">
+                            {(file.fileType.startsWith('image/') || file.fileType === 'application/pdf') && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePreviewFile(file)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDownloadFile(file._id, file.originalName)}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteFile(file._id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
