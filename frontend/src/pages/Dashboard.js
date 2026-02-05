@@ -78,6 +78,23 @@ const Dashboard = () => {
   const [success, setSuccess] = useState('');
   const [greeting] = useState(getGreeting());
 
+  // Preview modal state
+  const [previewFile, setPreviewFile] = useState(null);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+
+  // Storage stats state
+  const [storageStats, setStorageStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  // Analytics state
+  const [analytics, setAnalytics] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
+  // Edit text state
+  const [editingText, setEditingText] = useState(null);
+  const [editTextTitle, setEditTextTitle] = useState('');
+  const [editTextContent, setEditTextContent] = useState('');
+
   // Get display name
   const getDisplayName = () => {
     if (user?.displayName) return user.displayName;
