@@ -640,6 +640,31 @@ async def get_texts(user: dict = Depends(verify_token)):
         logging.error(f"Fetch texts error: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch texts")
 
+@api_router.put("/texts/{text_id}")
+async def update_text(text_id: str, text_data: TextUpdate, user: dict = Depends(verify_token)):
+    try:
+        text = await db.texts.find_one({"_id": text_id, "userId": user['userId']})
+        if not text:
+            raise HTTPException(status_code=404, detail="Text not found")
+        
+        update_data = {"updatedAt": datetime.now(timezone.utc).isoformat()}
+        if text_data.title is not None:
+            update_data['title'] = text_data.title
+        if text_data.content is not None:
+            update_data['content'] = text_data.content
+        
+        await db.texts.update_one(
+            {"_id": text_id},
+            {"$set": update_data}
+        )
+        
+        return {"message": "Text updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Update text error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update text")
+
 @api_router.delete("/texts/{text_id}")
 async def delete_text(text_id: str, user: dict = Depends(verify_token)):
     try:
