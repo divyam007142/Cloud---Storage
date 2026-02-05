@@ -362,6 +362,31 @@ async def delete_file(file_id: str, user: dict = Depends(verify_token)):
         logging.error(f"Delete file error: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete file")
 
+@api_router.get("/files/download/{file_id}")
+async def download_file(file_id: str, user: dict = Depends(verify_token)):
+    try:
+        # Find file
+        file_doc = await db.files.find_one({"_id": file_id, "userId": user['userId']})
+        if not file_doc:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        # Get file path
+        file_path = UPLOAD_DIR / file_doc['fileName']
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="File not found on disk")
+        
+        # Return file for download
+        return FileResponse(
+            path=str(file_path),
+            filename=file_doc['originalName'],
+            media_type=file_doc['fileType']
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Download file error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to download file")
+
 # User Profile Routes
 @api_router.get("/user/profile")
 async def get_profile(user: dict = Depends(verify_token)):
