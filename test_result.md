@@ -555,15 +555,16 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Custom Glassmorphic Login Page"
-    - "Phone Registration Option"
-    - "User Profile API"
-    - "Notes CRUD API"
-    - "Text Storage CRUD API"
-    - "Dashboard Redesign"
-    - "Settings Page"
-    - "Notes Feature"
-    - "Text Storage Feature"
+    - "File Download API"
+    - "Text Edit API"
+    - "User Settings API"
+    - "Storage Stats API"
+    - "Analytics API"
+    - "File Preview & Download UI"
+    - "Text Edit UI"
+    - "Analytics Dashboard"
+    - "Storage Stats Display"
+    - "Expanded Settings Page"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
