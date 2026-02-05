@@ -681,6 +681,121 @@ async def delete_text(text_id: str, user: dict = Depends(verify_token)):
         logging.error(f"Delete text error: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete text")
 
+# Storage Stats Routes
+@api_router.get("/storage/stats")
+async def get_storage_stats(user: dict = Depends(verify_token)):
+    try:
+        # Get all user files
+        files_cursor = db.files.find({"userId": user['userId']})
+        files = await files_cursor.to_list(10000)
+        
+        # Get counts
+        notes_count = await db.notes.count_documents({"userId": user['userId']})
+        texts_count = await db.texts.count_documents({"userId": user['userId']})
+        
+        # Calculate storage
+        total_storage_bytes = sum(f['fileSize'] for f in files)
+        storage_limit = 10 * 1024 * 1024 * 1024  # 10GB in bytes
+        storage_remaining = storage_limit - total_storage_bytes
+        percentage_used = (total_storage_bytes / storage_limit * 100) if storage_limit > 0 else 0
+        
+        # Calculate storage by type
+        storage_by_type = {
+            "image": 0,
+            "video": 0,
+            "audio": 0,
+            "pdf": 0,
+            "others": 0
+        }
+        
+        for file in files:
+            file_type = file['fileType'].lower()
+            if 'image' in file_type:
+                storage_by_type['image'] += file['fileSize']
+            elif 'video' in file_type:
+                storage_by_type['video'] += file['fileSize']
+            elif 'audio' in file_type:
+                storage_by_type['audio'] += file['fileSize']
+            elif 'pdf' in file_type:
+                storage_by_type['pdf'] += file['fileSize']
+            else:
+                storage_by_type['others'] += file['fileSize']
+        
+        return {
+            "storageUsed": total_storage_bytes,
+            "storageRemaining": storage_remaining,
+            "storageLimit": storage_limit,
+            "percentageUsed": round(percentage_used, 2),
+            "fileCount": len(files),
+            "notesCount": notes_count,
+            "textsCount": texts_count,
+            "storageByType": storage_by_type
+        }
+    except Exception as e:
+        logging.error(f"Get storage stats error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch storage stats")
+
+# Analytics Routes
+@api_router.get("/analytics")
+async def get_analytics(user: dict = Depends(verify_token)):
+    try:
+        # Get all user files
+        files_cursor = db.files.find({"userId": user['userId']})
+        files = await files_cursor.to_list(10000)
+        
+        # Get counts
+        notes_count = await db.notes.count_documents({"userId": user['userId']})
+        texts_count = await db.texts.count_documents({"userId": user['userId']})
+        
+        # Calculate total storage
+        total_storage = sum(f['fileSize'] for f in files)
+        
+        # File type distribution
+        file_type_dist = {}
+        for file in files:
+            file_type = file['fileType'].split('/')[0] if '/' in file['fileType'] else 'other'
+            file_type_dist[file_type] = file_type_dist.get(file_type, 0) + 1
+        
+        # Upload trends (last 30 days)
+        from datetime import timedelta
+        now = datetime.now(timezone.utc)
+        thirty_days_ago = now - timedelta(days=30)
+        
+        upload_trends = {}
+        for file in files:
+            file_date_str = file.get('uploadedAt')
+            if file_date_str:
+                # Parse ISO format datetime
+                if isinstance(file_date_str, str):
+                    file_date = datetime.fromisoformat(file_date_str.replace('Z', '+00:00'))
+                else:
+                    file_date = file_date_str
+                
+                if file_date >= thirty_days_ago:
+                    date_key = file_date.strftime('%Y-%m-%d')
+                    upload_trends[date_key] = upload_trends.get(date_key, 0) + 1
+        
+        # Fill missing days with 0
+        upload_trends_list = []
+        for i in range(30):
+            date = (now - timedelta(days=29-i)).strftime('%Y-%m-%d')
+            upload_trends_list.append({
+                "date": date,
+                "count": upload_trends.get(date, 0)
+            })
+        
+        return {
+            "totalFiles": len(files),
+            "totalStorage": total_storage,
+            "notesCount": notes_count,
+            "textsCount": texts_count,
+            "fileTypeDistribution": file_type_dist,
+            "uploadTrends": upload_trends_list
+        }
+    except Exception as e:
+        logging.error(f"Get analytics error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch analytics")
+
 # Include the router in the main app
 app.include_router(api_router)
 
