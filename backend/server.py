@@ -376,7 +376,7 @@ async def download_file(file_id: str, user: dict = Depends(verify_token)):
             raise HTTPException(status_code=404, detail="File not found on disk")
         
         # Return file for download
-        return FileResponse(
+        return FastAPIFileResponse(
             path=str(file_path),
             filename=file_doc['originalName'],
             media_type=file_doc['fileType']
