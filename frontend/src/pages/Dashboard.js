@@ -1069,6 +1069,157 @@ const Dashboard = () => {
             </div>
           )}
 
+          {/* Analytics Section */}
+          {activeSection === 'analytics' && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">Analytics</h3>
+                <p className="text-gray-600 mt-1">Insights into your storage usage</p>
+              </div>
+
+              {analyticsLoading ? (
+                <div className="text-center py-12">
+                  <Loader2 className="h-10 w-10 animate-spin mx-auto text-gray-400" />
+                </div>
+              ) : analytics ? (
+                <>
+                  {/* Overview Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm font-medium text-gray-600">Total Files</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold text-blue-600">{analytics.totalFiles}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm font-medium text-gray-600">Total Storage</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold text-purple-600">
+                          {(analytics.totalStorage / (1024 * 1024)).toFixed(1)} MB
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm font-medium text-gray-600">Notes</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold text-green-600">{analytics.notesCount}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm font-medium text-gray-600">Texts</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-3xl font-bold text-orange-600">{analytics.textsCount}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* File Type Distribution */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>File Type Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {Object.keys(analytics.fileTypeDistribution).length > 0 ? (
+                        <div className="space-y-3">
+                          {Object.entries(analytics.fileTypeDistribution).map(([type, count]) => (
+                            <div key={type} className="flex items-center justify-between">
+                              <div className="flex items-center gap-3 flex-1">
+                                <span className="capitalize font-medium">{type}</span>
+                                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className="bg-blue-600 h-2 rounded-full"
+                                    style={{
+                                      width: `${(count / analytics.totalFiles) * 100}%`
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                              <span className="text-sm text-gray-600 ml-4">{count} files</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-center text-gray-500 py-8">No file data available</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Upload Trends */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Upload Trends (Last 30 Days)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {analytics.uploadTrends && analytics.uploadTrends.length > 0 ? (
+                          <div className="grid grid-cols-7 gap-1">
+                            {analytics.uploadTrends.slice(-28).map((trend, index) => (
+                              <div key={index} className="flex flex-col items-center">
+                                <div
+                                  className="w-full bg-blue-500 rounded-t"
+                                  style={{
+                                    height: `${Math.max(trend.count * 10, 4)}px`,
+                                    maxHeight: '100px'
+                                  }}
+                                  title={`${trend.date}: ${trend.count} uploads`}
+                                />
+                                {index % 7 === 0 && (
+                                  <span className="text-xs text-gray-500 mt-1">
+                                    {new Date(trend.date).getDate()}
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-center text-gray-500 py-8">No upload data available</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              ) : (
+                <p className="text-center text-gray-500 py-12">No analytics data available</p>
+              )}
+            </div>
+          )}
+
+          {/* File Preview Modal */}
+          <Dialog open={previewModalOpen} onOpenChange={setPreviewModalOpen}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>{previewFile?.originalName}</DialogTitle>
+              </DialogHeader>
+              {previewFile && (
+                <div className="mt-4">
+                  {previewFile.fileType.startsWith('image/') ? (
+                    <img
+                      src={`${BACKEND_URL}${previewFile.fileUrl}`}
+                      alt={previewFile.originalName}
+                      className="w-full h-auto rounded"
+                    />
+                  ) : previewFile.fileType === 'application/pdf' ? (
+                    <iframe
+                      src={`${BACKEND_URL}${previewFile.fileUrl}`}
+                      className="w-full h-[600px] rounded"
+                      title={previewFile.originalName}
+                    />
+                  ) : (
+                    <p className="text-center text-gray-500 py-8">Preview not available for this file type</p>
+                  )}
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
           {/* Settings Section */}
           {activeSection === 'settings' && <Settings />}
         </main>
